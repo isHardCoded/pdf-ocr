@@ -1,0 +1,32 @@
+services:
+  backend:
+    build: ./backend
+    container_name: pdf-reader-backend
+    restart: unless-stopped
+    environment:
+      DATA_DIR: /data
+    volumes:
+      - ./data:/data
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # Frontend is opt-in via profile because building it in Docker requires npm
+  # access which may be blocked from some networks. For dev, run:
+  #     cd frontend; npm install --legacy-peer-deps; npm run dev
+  # To build the Docker image, run:  docker compose --profile ui up --build
+  frontend:
+    profiles: ["ui"]
+    build: ./frontend
+    container_name: pdf-reader-frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
