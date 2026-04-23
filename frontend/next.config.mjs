@@ -1,13 +1,7 @@
 /** @type {import('next').NextConfig} */
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
+// API proxy: see app/api/[[...path]]/route.ts (uses BACKEND_URL or NEXT_PUBLIC_API_URL at runtime)
 const nextConfig = {
   reactStrictMode: true,
-  async rewrites() {
-    return [
-      { source: "/api/:path*", destination: `${API_URL}/:path*` },
-    ];
-  },
 };
 
 export default nextConfig;

@@ -1,3 +1,5 @@
+import type { OcrMode, OcrSettingsValue } from "@/features/ocr";
+
 export type JobStatus = "pending" | "running" | "completed" | "failed";
 
 export interface Job {
@@ -10,7 +12,7 @@ export interface Job {
   language: string;
   optimize: number;
   deskew: boolean;
-  mode: "skip_text" | "force_ocr" | "redo_ocr";
+  mode: OcrMode;
   input_size: number;
   output_size: number;
   error?: string | null;
@@ -19,18 +21,17 @@ export interface Job {
   completed_at?: string | null;
 }
 
-// In the browser all requests go through Next's rewrite at /api/*
+export interface JobListResponse {
+  items: Job[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
 const BASE = "/api";
 
-export async function createJob(
-  file: File,
-  opts: {
-    language: string;
-    optimize: number;
-    deskew: boolean;
-    mode: "skip_text" | "force_ocr" | "redo_ocr";
-  }
-): Promise<Job> {
+export async function createJob(file: File, opts: OcrSettingsValue): Promise<Job> {
   const fd = new FormData();
   fd.append("file", file);
   fd.append("language", opts.language);
@@ -42,8 +43,12 @@ export async function createJob(
   return r.json();
 }
 
-export async function listJobs(): Promise<Job[]> {
-  const r = await fetch(`${BASE}/jobs`, { cache: "no-store" });
+export async function listJobs(params?: { page?: number; page_size?: number }): Promise<JobListResponse> {
+  const sp = new URLSearchParams();
+  if (params?.page != null) sp.set("page", String(params.page));
+  if (params?.page_size != null) sp.set("page_size", String(params.page_size));
+  const q = sp.toString();
+  const r = await fetch(`${BASE}/jobs${q ? `?${q}` : ""}`, { cache: "no-store" });
   if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
@@ -61,10 +66,6 @@ export async function deleteJob(id: number): Promise<void> {
 
 export function downloadUrl(id: number): string {
   return `${BASE}/jobs/${id}/download`;
-}
-
-export function previewUrl(id: number): string {
-  return `${BASE}/jobs/${id}/preview`;
 }
 
 export function streamUrl(id: number): string {

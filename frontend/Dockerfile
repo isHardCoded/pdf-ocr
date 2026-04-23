@@ -1,18 +1,18 @@
 FROM mirror.gcr.io/library/node:20-alpine AS deps
 WORKDIR /app
-COPY package.json ./
-# Use npmmirror (accessible from RU/CIS) + generous timeouts to avoid hangs.
-RUN npm config set registry https://registry.npmmirror.com && \
-    npm config set fetch-retries 5 && \
-    npm config set fetch-retry-mintimeout 20000 && \
-    npm config set fetch-retry-maxtimeout 120000 && \
-    npm config set fetch-timeout 600000 && \
-    npm install --no-audit --no-fund --legacy-peer-deps --prefer-offline
+COPY package.json package-lock.json ./
+# Default: https://registry.npmjs.org (reliable from most networks).
+# If npm is blocked/slow, build with: --build-arg NPM_REGISTRY=https://registry.npmmirror.com
+ARG NPM_REGISTRY=
+RUN if [ -n "$NPM_REGISTRY" ]; then npm config set registry "$NPM_REGISTRY"; fi && \
+    npm ci --no-audit --no-fund --legacy-peer-deps
 
 FROM mirror.gcr.io/library/node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Next does not require public/; without it, runner COPY --from=builder /app/public fails
+RUN mkdir -p public
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
@@ -26,4 +26,5 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/next.config.mjs ./next.config.mjs
 EXPOSE 3000
+# Next must listen on 0.0.0.0 so host:3000 → container is reachable (not only 127.0.0.1)
 CMD ["npm", "start"]

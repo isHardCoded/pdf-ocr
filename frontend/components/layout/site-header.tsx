@@ -1,0 +1,74 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { FileText, History, Upload } from "lucide-react";
+
+import { mainNav, site } from "@/config/site";
+import { appContainerClass } from "@/config/layout";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { cn } from "@/lib/utils";
+
+const icons = {
+  "/": Upload,
+  "/jobs": History,
+} as const;
+
+function NavIcon({ href }: { href: "/" | "/jobs" }) {
+  const I = icons[href];
+  return <I className="h-4 w-4" aria-hidden />;
+}
+
+export function SiteHeader() {
+  const pathname = usePathname();
+
+  return (
+    <header className="sticky top-0 z-50 border-b border-border/40 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
+      <div
+        className={cn(
+          appContainerClass,
+          "flex h-16 items-center justify-between gap-4"
+        )}
+      >
+        <Link
+          href="/"
+          className="group flex min-w-0 shrink-0 items-center gap-2.5 rounded-lg outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-inset ring-primary/20 transition-colors group-hover:bg-primary/15 group-hover:ring-primary/30">
+            <FileText className="h-4 w-4" aria-hidden />
+          </span>
+          <span className="flex min-w-0 flex-col leading-tight">
+            <span className="truncate text-sm font-semibold tracking-tight sm:text-base">{site.name}</span>
+            <span className="hidden text-xs text-muted-foreground sm:block">{site.tagline}</span>
+          </span>
+        </Link>
+
+        <div className="flex items-center gap-1 sm:gap-2">
+          <nav className="flex items-center gap-0.5 sm:gap-1" aria-label="Основная навигация">
+            {mainNav.map((item) => {
+              const active =
+                pathname === item.href ||
+                (item.href !== "/" && pathname.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium transition-all duration-200 sm:px-3",
+                    active
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
+                  )}
+                >
+                  <NavIcon href={item.href} />
+                  <span className="hidden sm:inline">{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+          <ThemeToggle />
+        </div>
+      </div>
+    </header>
+  );
+}

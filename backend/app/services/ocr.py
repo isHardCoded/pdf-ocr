@@ -122,6 +122,9 @@ def run_ocr_sync(job_id: int) -> None:
             "plugins": ["app.services.ocr"],
             "use_threads": True,
         }
+        # skip_text: skip pages that ocrmypdf considers to already have text. Mixed or
+        # noisy PDFs often get most pages “skipped” (no new OCR) while one image-only
+        # page is recognized — use force_ocr for full scans. See OcrSettings help text.
         mode = params["mode"]
         if mode == "force_ocr":
             kwargs["force_ocr"] = True

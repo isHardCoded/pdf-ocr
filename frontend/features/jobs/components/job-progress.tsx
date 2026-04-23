@@ -1,8 +1,10 @@
 "use client";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { streamUrl } from "@/lib/api";
-import { Progress } from "./ui/progress";
 import { formatDuration } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 
 interface ProgressEvent {
   phase?: string;
@@ -13,7 +15,7 @@ interface ProgressEvent {
   error?: string;
 }
 
-interface Props {
+export interface JobProgressProps {
   jobId: number;
   initialProgress: number;
   initialPage: number;
@@ -29,7 +31,7 @@ export function JobProgress({
   initialTotal,
   initialStatus,
   onTerminal,
-}: Props) {
+}: JobProgressProps) {
   const [ev, setEv] = useState<ProgressEvent>({
     progress: initialProgress,
     page: initialPage,
@@ -52,15 +54,15 @@ export function JobProgress({
         if (data.status === "completed" || data.status === "failed") {
           if (!terminalFired.current) {
             terminalFired.current = true;
-            onTerminal?.(data.status as any, data.error);
+            onTerminal?.(data.status as "completed" | "failed", data.error);
           }
           es.close();
         }
-      } catch {}
+      } catch {
+        // ignore bad SSE payloads
+      }
     });
-    es.onerror = () => {
-      // Let the SSE lib auto-retry; no-op
-    };
+    es.onerror = () => {};
     return () => es.close();
   }, [jobId, initialStatus, onTerminal]);
 
@@ -76,25 +78,24 @@ export function JobProgress({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="text-4xl font-bold tabular-nums">{pct}%</div>
-          <div className="mt-1 text-sm text-muted-foreground">
-            {ev.phase && ev.phase !== "snapshot" ? `Этап: ${ev.phase}` : "Обработка"}
-          </div>
+          <div className="text-3xl font-bold tabular-nums tracking-tight sm:text-4xl">{pct}%</div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {ev.phase && ev.phase !== "snapshot" ? `Этап: ${ev.phase}` : "Идёт обработка…"}
+          </p>
         </div>
-        <div className="text-right text-sm">
-          <div className="tabular-nums">
+        <div className="text-left text-sm sm:text-right">
+          <div className="tabular-nums text-foreground">
             {ev.page ?? 0}
-            {ev.total ? ` / ${ev.total}` : ""} страниц
+            {ev.total ? ` / ${ev.total}` : ""} стр.
           </div>
           {isRunning && eta != null && (
-            <div className="text-muted-foreground">
-              осталось ~ {formatDuration(eta)}
-            </div>
+            <div className="text-muted-foreground">Осталось ~{formatDuration(eta)}</div>
           )}
         </div>
       </div>
+      <Separator />
       <Progress value={pct} indeterminate={isRunning && pct < 2} />
     </div>
   );

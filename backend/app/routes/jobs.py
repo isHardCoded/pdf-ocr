@@ -6,9 +6,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Literal, Optional
 
-from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from sqlalchemy import func
 from sqlmodel import Session, select
 
 from ..config import INPUT_DIR, OUTPUT_DIR
@@ -59,6 +60,14 @@ class JobOut(BaseModel):
         )
 
 
+class JobListOut(BaseModel):
+    items: list[JobOut]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
 @router.post("", response_model=JobOut)
 async def create_job(
     file: UploadFile = File(...),
@@ -103,11 +112,28 @@ async def create_job(
     return out
 
 
-@router.get("", response_model=list[JobOut])
-def list_jobs():
+@router.get("", response_model=JobListOut)
+def list_jobs(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(12, ge=1, le=100),
+):
     with Session(engine) as s:
-        jobs = s.exec(select(Job).order_by(Job.created_at.desc())).all()
-        return [JobOut.from_job(j) for j in jobs]
+        count_stmt = select(func.count(1)).select_from(Job)
+        count_row = s.exec(count_stmt).one()
+        if isinstance(count_row, (int, float)):
+            total = int(count_row)
+        else:
+            total = int(count_row[0])  # Row/tuple from driver
+        q = select(Job).order_by(Job.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
+        jobs = s.exec(q).all()
+    total_pages = (total + page_size - 1) // page_size if total else 0
+    return JobListOut(
+        items=[JobOut.from_job(j) for j in jobs],
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
+    )
 
 
 @router.get("/{job_id}", response_model=JobOut)
