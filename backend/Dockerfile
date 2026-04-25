@@ -1,4 +1,8 @@
-FROM mirror.gcr.io/library/python:3.12-slim
+# If docker.io fails (EOF on auth), pull base once manually or set in .env, e.g.:
+#   BASE_IMAGE_DOCKER=registry.example.com/python:3.12-slim
+#   docker compose build --build-arg BASE_IMAGE=${BASE_IMAGE_DOCKER}
+ARG BASE_IMAGE=python:3.12-slim
+FROM ${BASE_IMAGE}
 
 # System deps for OCRmyPDF
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -16,20 +20,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 COPY pyproject.toml /app/
-RUN pip install --no-cache-dir \
-    "ocrmypdf>=16.0.0" \
-    fastapi==0.115.0 \
-    "uvicorn[standard]==0.30.6" \
-    sqlmodel==0.0.22 \
-    python-multipart==0.0.12 \
-    sse-starlette==2.1.3 \
-    aiofiles==24.1.0
+RUN pip install --no-cache-dir "ocrmypdf>=16.0.0" "sqlmodel==0.0.22"
 
 COPY app /app/app
 
 ENV PYTHONUNBUFFERED=1
 ENV DATA_DIR=/data
 
-EXPOSE 8000
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Standalone worker (API is Node/Prisma; shared SQLite and files in DATA_DIR)
+CMD ["python", "-m", "app.worker"]

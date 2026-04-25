@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-/** Server-side only; in Docker this must be the service name (e.g. http://backend:8000). */
+/** Server-side only; in Docker this must be the service name (e.g. http://api:8000). */
 const backendBase = () =>
   (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(
     /\/$/u,
@@ -17,6 +17,7 @@ async function proxy(request: NextRequest) {
   h.delete("host");
   h.delete("connection");
 
+  const method = request.method;
   const init: RequestInit = {
     method: request.method,
     headers: h,
@@ -25,14 +26,26 @@ async function proxy(request: NextRequest) {
     Object.assign(init, { body: request.body, duplex: "half" as const });
   }
 
+  // POST (upload) — без лимита. GET /stream, /download, /preview — долгие. Остальные GET/DELETE/HEAD — 60s
+  const aborter = new AbortController();
+  const longRunningGet = /\/(stream|download|preview)(?:\?|$)/.test(incoming.pathname);
+  const withTimeout =
+    !longRunningGet && (method === "GET" || method === "DELETE" || method === "HEAD");
+  const timer: ReturnType<typeof setTimeout> | null = withTimeout
+    ? setTimeout(() => {
+        aborter.abort();
+      }, 60_000)
+    : null;
   try {
-    const res = await fetch(target, init);
+    const res = await fetch(target, { ...init, signal: aborter.signal });
+    if (timer) clearTimeout(timer);
     return new NextResponse(res.body, {
       status: res.status,
       statusText: res.statusText,
       headers: res.headers,
     });
   } catch {
+    if (timer) clearTimeout(timer);
     return new NextResponse("Backend is unavailable. Check that the API is running and BACKEND_URL is set in Docker.", {
       status: 502,
     });

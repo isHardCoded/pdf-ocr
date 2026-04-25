@@ -1,0 +1,187 @@
+import { z } from "zod";
+export declare const ocrModeSchema: z.ZodEnum<["skip_text", "force_ocr", "redo_ocr"]>;
+export declare const listJobsQuerySchema: z.ZodObject<{
+    page: z.ZodDefault<z.ZodNumber>;
+    page_size: z.ZodDefault<z.ZodNumber>;
+}, "strip", z.ZodTypeAny, {
+    page: number;
+    page_size: number;
+}, {
+    page?: number | undefined;
+    page_size?: number | undefined;
+}>;
+export type ListJobsQuery = z.infer<typeof listJobsQuerySchema>;
+export declare const jobOutSchema: z.ZodObject<{
+    id: z.ZodNumber;
+    filename: z.ZodString;
+    status: z.ZodString;
+    progress: z.ZodNumber;
+    total_pages: z.ZodNumber;
+    current_page: z.ZodNumber;
+    language: z.ZodString;
+    optimize: z.ZodNumber;
+    deskew: z.ZodBoolean;
+    mode: z.ZodString;
+    input_size: z.ZodNumber;
+    output_size: z.ZodNumber;
+    error: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+    created_at: z.ZodEffects<z.ZodUnion<[z.ZodString, z.ZodString, z.ZodDate]>, string, string | Date>;
+    started_at: z.ZodOptional<z.ZodUnion<[z.ZodEffects<z.ZodUnion<[z.ZodString, z.ZodString, z.ZodDate]>, string, string | Date>, z.ZodNull]>>;
+    completed_at: z.ZodOptional<z.ZodUnion<[z.ZodEffects<z.ZodUnion<[z.ZodString, z.ZodString, z.ZodDate]>, string, string | Date>, z.ZodNull]>>;
+}, "strip", z.ZodTypeAny, {
+    id: number;
+    filename: string;
+    status: string;
+    progress: number;
+    language: string;
+    optimize: number;
+    deskew: boolean;
+    mode: string;
+    total_pages: number;
+    current_page: number;
+    input_size: number;
+    output_size: number;
+    created_at: string;
+    error?: string | null | undefined;
+    started_at?: string | null | undefined;
+    completed_at?: string | null | undefined;
+}, {
+    id: number;
+    filename: string;
+    status: string;
+    progress: number;
+    language: string;
+    optimize: number;
+    deskew: boolean;
+    mode: string;
+    total_pages: number;
+    current_page: number;
+    input_size: number;
+    output_size: number;
+    created_at: string | Date;
+    error?: string | null | undefined;
+    started_at?: string | Date | null | undefined;
+    completed_at?: string | Date | null | undefined;
+}>;
+export type JobOut = z.infer<typeof jobOutSchema>;
+export declare const jobListOutSchema: z.ZodObject<{
+    items: z.ZodArray<z.ZodObject<{
+        id: z.ZodNumber;
+        filename: z.ZodString;
+        status: z.ZodString;
+        progress: z.ZodNumber;
+        total_pages: z.ZodNumber;
+        current_page: z.ZodNumber;
+        language: z.ZodString;
+        optimize: z.ZodNumber;
+        deskew: z.ZodBoolean;
+        mode: z.ZodString;
+        input_size: z.ZodNumber;
+        output_size: z.ZodNumber;
+        error: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        created_at: z.ZodEffects<z.ZodUnion<[z.ZodString, z.ZodString, z.ZodDate]>, string, string | Date>;
+        started_at: z.ZodOptional<z.ZodUnion<[z.ZodEffects<z.ZodUnion<[z.ZodString, z.ZodString, z.ZodDate]>, string, string | Date>, z.ZodNull]>>;
+        completed_at: z.ZodOptional<z.ZodUnion<[z.ZodEffects<z.ZodUnion<[z.ZodString, z.ZodString, z.ZodDate]>, string, string | Date>, z.ZodNull]>>;
+    }, "strip", z.ZodTypeAny, {
+        id: number;
+        filename: string;
+        status: string;
+        progress: number;
+        language: string;
+        optimize: number;
+        deskew: boolean;
+        mode: string;
+        total_pages: number;
+        current_page: number;
+        input_size: number;
+        output_size: number;
+        created_at: string;
+        error?: string | null | undefined;
+        started_at?: string | null | undefined;
+        completed_at?: string | null | undefined;
+    }, {
+        id: number;
+        filename: string;
+        status: string;
+        progress: number;
+        language: string;
+        optimize: number;
+        deskew: boolean;
+        mode: string;
+        total_pages: number;
+        current_page: number;
+        input_size: number;
+        output_size: number;
+        created_at: string | Date;
+        error?: string | null | undefined;
+        started_at?: string | Date | null | undefined;
+        completed_at?: string | Date | null | undefined;
+    }>, "many">;
+    total: z.ZodNumber;
+    page: z.ZodNumber;
+    page_size: z.ZodNumber;
+    total_pages: z.ZodNumber;
+}, "strip", z.ZodTypeAny, {
+    page: number;
+    total: number;
+    page_size: number;
+    total_pages: number;
+    items: {
+        id: number;
+        filename: string;
+        status: string;
+        progress: number;
+        language: string;
+        optimize: number;
+        deskew: boolean;
+        mode: string;
+        total_pages: number;
+        current_page: number;
+        input_size: number;
+        output_size: number;
+        created_at: string;
+        error?: string | null | undefined;
+        started_at?: string | null | undefined;
+        completed_at?: string | null | undefined;
+    }[];
+}, {
+    page: number;
+    total: number;
+    page_size: number;
+    total_pages: number;
+    items: {
+        id: number;
+        filename: string;
+        status: string;
+        progress: number;
+        language: string;
+        optimize: number;
+        deskew: boolean;
+        mode: string;
+        total_pages: number;
+        current_page: number;
+        input_size: number;
+        output_size: number;
+        created_at: string | Date;
+        error?: string | null | undefined;
+        started_at?: string | Date | null | undefined;
+        completed_at?: string | Date | null | undefined;
+    }[];
+}>;
+export type JobListOut = z.infer<typeof jobListOutSchema>;
+export declare const createJobFormSchema: z.ZodObject<{
+    language: z.ZodDefault<z.ZodString>;
+    optimize: z.ZodDefault<z.ZodNumber>;
+    deskew: z.ZodDefault<z.ZodEffects<z.ZodBoolean, boolean, unknown>>;
+    mode: z.ZodDefault<z.ZodEnum<["skip_text", "force_ocr", "redo_ocr"]>>;
+}, "strip", z.ZodTypeAny, {
+    language: string;
+    optimize: number;
+    deskew: boolean;
+    mode: "skip_text" | "force_ocr" | "redo_ocr";
+}, {
+    language?: string | undefined;
+    optimize?: number | undefined;
+    deskew?: unknown;
+    mode?: "skip_text" | "force_ocr" | "redo_ocr" | undefined;
+}>;

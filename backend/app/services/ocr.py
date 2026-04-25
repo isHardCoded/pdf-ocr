@@ -1,7 +1,6 @@
-"""OCR worker: runs ocrmypdf in a thread, publishes progress via SSE queue."""
+"""OCR engine: ocrmypdf; progress is written to SQLite and optional in-process SSE queue."""
 from __future__ import annotations
 
-import asyncio
 import contextvars
 import logging
 import os
@@ -167,13 +166,3 @@ def run_ocr_sync(job_id: int) -> None:
         )
     finally:
         _current_job_id.reset(token)
-
-
-async def run_ocr(job_id: int) -> None:
-    """Async wrapper: runs OCR in a thread so the event loop stays free."""
-    progress.register(job_id)
-    try:
-        await asyncio.to_thread(run_ocr_sync, job_id)
-    finally:
-        await asyncio.sleep(1.0)
-        progress.unregister(job_id)

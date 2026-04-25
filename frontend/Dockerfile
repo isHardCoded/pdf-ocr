@@ -1,4 +1,6 @@
-FROM mirror.gcr.io/library/node:20-alpine AS deps
+# Same BASE_IMAGE is used in all stages (set once via build-arg / compose).
+ARG BASE_IMAGE=node:20-alpine
+FROM ${BASE_IMAGE} AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 # Default: https://registry.npmjs.org (reliable from most networks).
@@ -7,7 +9,8 @@ ARG NPM_REGISTRY=
 RUN if [ -n "$NPM_REGISTRY" ]; then npm config set registry "$NPM_REGISTRY"; fi && \
     npm ci --no-audit --no-fund --legacy-peer-deps
 
-FROM mirror.gcr.io/library/node:20-alpine AS builder
+ARG BASE_IMAGE=node:20-alpine
+FROM ${BASE_IMAGE} AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -16,7 +19,7 @@ RUN mkdir -p public
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-FROM mirror.gcr.io/library/node:20-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
