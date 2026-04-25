@@ -1,11 +1,11 @@
 export const site = {
   name: "PDF OCR",
-  tagline: "сканы → копируемый текст",
+  tagline: "текст из сканов и фото в PDF",
   description:
-    "Локальный конвертер PDF: делает отсканированные страницы с выделяемым текстом через OCRmyPDF и Tesseract.",
+    "Сервис на вашем компьютере: загружаете PDF со сканами — получаете документ, из которого можно копировать текст. Файлы не отправляются в интернет.",
 } as const;
 
 export const mainNav = [
-  { href: "/" as const, label: "Новая задача" },
-  { href: "/jobs" as const, label: "История" },
+  { href: "/" as const, label: "Загрузить PDF" },
+  { href: "/jobs" as const, label: "Мои файлы" },
 ] as const;

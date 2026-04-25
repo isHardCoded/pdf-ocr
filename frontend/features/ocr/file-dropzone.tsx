@@ -82,7 +82,7 @@ export function FileDropzone({ file, onFile, disabled, className }: FileDropzone
         </p>
         <p className="mt-1 text-sm text-muted-foreground">или нажмите, чтобы выбрать с диска</p>
         <p className="mt-3 text-xs text-muted-foreground">
-          Крупные файлы (сотни страниц) поддерживаются. Ограничение — свободное место на диске.
+          Можно и толстые многостраничные документы — главное, чтобы на диске хватило места.
         </p>
       </div>
     </div>

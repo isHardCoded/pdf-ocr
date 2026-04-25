@@ -1,3 +1,4 @@
+export { AnimatedRouteContent } from "./animated-route-content";
 export { AppSidebar } from "./app-sidebar";
 export { PageContainer } from "./page-container";
 export { SiteHeader } from "./site-header";

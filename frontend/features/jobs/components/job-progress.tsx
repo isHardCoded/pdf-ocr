@@ -82,7 +82,7 @@ export function JobProgress({
         <div>
           <div className="text-3xl font-bold tabular-nums tracking-tight sm:text-4xl">{pct}%</div>
           <p className="mt-1 text-sm text-muted-foreground">
-            {ev.phase && ev.phase !== "snapshot" ? `Этап: ${ev.phase}` : "Идёт обработка…"}
+            {ev.phase && ev.phase !== "snapshot" ? `Сейчас: ${ev.phase}` : "Обрабатываем файл…"}
           </p>
         </div>
         <div className="text-left text-sm sm:text-right">

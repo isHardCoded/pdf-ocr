@@ -1,11 +1,10 @@
 import { PageContainer } from "@/components/layout";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PageSpinner } from "@/components/ui/spinner";
 
 export default function JobDetailLoading() {
   return (
-    <PageContainer className="space-y-4 py-0">
-      <Skeleton className="h-8 w-40" />
-      <Skeleton className="h-56 w-full rounded-xl" />
+    <PageContainer className="py-6">
+      <PageSpinner minHeight="min-h-[14rem]" />
     </PageContainer>
   );
 }

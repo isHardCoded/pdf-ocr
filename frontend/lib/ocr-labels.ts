@@ -1,9 +1,9 @@
 import type { OcrMode } from "@/features/ocr";
 
 const modeLabels: Record<OcrMode, string> = {
-  force_ocr: "OCR всех страниц",
-  redo_ocr: "Пересоздать сомнительный слой",
-  skip_text: "Пропуск при наличии текста",
+  force_ocr: "все страницы (как для обычного скана)",
+  redo_ocr: "только сомнительные места",
+  skip_text: "не трогать страницы, где текст уже есть",
 };
 
 const langLabels: Record<string, string> = {
@@ -13,10 +13,10 @@ const langLabels: Record<string, string> = {
 };
 
 const optLabels: Record<number, string> = {
-  0: "без сжатия",
-  1: "базовое",
-  2: "сильное",
-  3: "максимальное",
+  0: "без ужатия",
+  1: "слегка уменьшить",
+  2: "сильнее уменьшить",
+  3: "как можно компактнее",
 };
 
 export function labelMode(m: OcrMode): string {

@@ -6,7 +6,7 @@ import "@fontsource-variable/inter/wght.css";
 
 import "./globals.css";
 import { Providers } from "./providers";
-import { SiteFooter, SiteHeader } from "@/components/layout";
+import { AnimatedRouteContent, SiteFooter, SiteHeader } from "@/components/layout";
 import { site } from "@/config/site";
 
 export const metadata: Metadata = {
@@ -20,8 +20,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="flex min-h-screen flex-col bg-background font-sans text-foreground antialiased">
         <Providers>
           <SiteHeader />
-          <main className="flex flex-1 flex-col bg-grid py-6 md:py-10 lg:py-12">{children}</main>
-          <SiteFooter />
+          <main className="flex flex-1 flex-col bg-grid py-6 md:py-10 lg:py-12">
+            <AnimatedRouteContent>{children}</AnimatedRouteContent>
+          </main>
         </Providers>
       </body>
     </html>

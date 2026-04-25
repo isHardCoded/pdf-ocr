@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PageSpinner } from "@/components/ui/spinner";
 import { cn, formatBytes } from "@/lib/utils";
 import { deleteJob, downloadUrl, getJob, type Job } from "@/lib/api";
 import { JobProgress } from "./components/job-progress";
@@ -34,7 +34,7 @@ export function JobDetailView() {
   });
 
   async function onDelete() {
-    if (!confirm("Удалить задачу и файлы?")) return;
+    if (!confirm("Удалить этот файл и все связанные с ним данные на сервере?")) return;
     try {
       await deleteJob(id);
       toast.success("Удалено");
@@ -49,10 +49,10 @@ export function JobDetailView() {
     return (
       <PageContainer>
         <Alert variant="destructive" className="mt-2">
-          <AlertTitle>Некорректная ссылка</AlertTitle>
+          <AlertTitle>Такой страницы нет</AlertTitle>
           <AlertDescription>
             <Link href="/jobs" className="font-medium underline underline-offset-2 hover:text-foreground">
-              К истории
+              Вернуться к списку файлов
             </Link>
           </AlertDescription>
         </Alert>
@@ -63,10 +63,7 @@ export function JobDetailView() {
   if (isLoading || !job) {
     return (
       <PageContainer>
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-40 w-full rounded-lg" />
-        </div>
+        <PageSpinner minHeight="min-h-[14rem]" />
       </PageContainer>
     );
   }
@@ -83,7 +80,7 @@ export function JobDetailView() {
             )}
           >
             <ArrowLeft className="h-4 w-4" />
-            Назад
+            К списку
           </Link>
           <JobStatusBadge status={job.status} />
         </div>
@@ -115,9 +112,9 @@ export function JobDetailView() {
                   qc.invalidateQueries({ queryKey: ["job", id] });
                   qc.invalidateQueries({ queryKey: ["jobs"] });
                   if (status === "completed") {
-                    toast.success("Готово");
+                    toast.success("Готово — можно скачивать");
                   } else {
-                    toast.error(error || "Ошибка");
+                    toast.error(error || "Обработка не удалась");
                   }
                 }}
               />
@@ -145,7 +142,7 @@ export function JobDetailView() {
                   )}
                 >
                   <Download className="h-4 w-4" />
-                  Скачать PDF
+                  Скачать результат
                 </a>
               )}
               <Button

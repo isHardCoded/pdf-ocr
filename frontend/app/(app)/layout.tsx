@@ -18,7 +18,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           "min-w-0 w-full flex-1",
           "rounded-2xl border border-border/70",
           "bg-card/80 shadow-sm ring-1 ring-border/20",
-          "p-4 sm:p-5 md:p-6",
+          "px-4 py-6 sm:px-5 sm:py-7 md:px-6 md:py-8",
           "dark:bg-gradient-to-b dark:from-card/90 dark:to-muted/15 dark:shadow-md dark:ring-border/30"
         )}
       >

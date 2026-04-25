@@ -7,14 +7,6 @@ import { site } from "@/config/site";
 import { appContainerClass } from "@/config/layout";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
@@ -40,25 +32,11 @@ export function SiteHeader() {
         </Link>
 
         <div className="flex items-center gap-0.5 sm:gap-1.5">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-lg" aria-label="Профиль">
-                <User className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="font-normal">
-                <div className="text-sm">Профиль</div>
-                <p className="text-xs text-muted-foreground">Демо-кабинет, без реальной авторизации.</p>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/account" className="cursor-pointer">
-                  Личный кабинет
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-lg p-0" asChild>
+            <Link href="/account" aria-label="Личный кабинет">
+              <User className="h-4 w-4" />
+            </Link>
+          </Button>
           <ThemeToggle />
         </div>
       </div>

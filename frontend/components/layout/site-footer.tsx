@@ -7,7 +7,7 @@ export function SiteFooter() {
     <footer className="mt-auto border-t border-border/40 py-8 text-center">
       <div className={cn(appContainerClass)}>
         <p className="text-xs text-muted-foreground">
-          {site.name} · на вашем компьютере. PDF не уходят в интернет.
+          {site.name} · работает у вас на компьютере, файлы никуда не отправляются.
         </p>
       </div>
     </footer>

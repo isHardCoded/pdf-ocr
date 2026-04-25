@@ -28,7 +28,7 @@ export function OcrSettings({ value, onChange, disabled, className }: OcrSetting
   return (
     <Card className={cn("border-border/70", className)}>
       <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
-        <CardTitle className="text-sm font-medium">Параметры</CardTitle>
+        <CardTitle className="text-sm font-medium">Дополнительно</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5 p-4 pt-2 sm:p-5 sm:pt-2">
         <div className="grid gap-5 sm:grid-cols-2">
@@ -49,13 +49,12 @@ export function OcrSettings({ value, onChange, disabled, className }: OcrSetting
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Нужен другой язык — поставьте пакет{" "}
-              <code className="rounded bg-muted px-1 py-0.5 text-[0.7rem]">tesseract-ocr-…</code> в Docker.
+              Выберите язык, которым в основном написан документ — так текст получится точнее.
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="opt">Сжатие PDF после OCR</Label>
+            <Label htmlFor="opt">Насколько сильно ужать готовый файл</Label>
             <Select
               value={String(value.optimize)}
               onValueChange={(v) => set("optimize", Number(v))}
@@ -65,20 +64,20 @@ export function OcrSettings({ value, onChange, disabled, className }: OcrSetting
                 <SelectValue placeholder="Уровень" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0">Без оптимизации</SelectItem>
-                <SelectItem value="1">Базовая</SelectItem>
-                <SelectItem value="2">Сильная</SelectItem>
-                <SelectItem value="3">Максимальная (по умолчанию)</SelectItem>
+                <SelectItem value="0">Не ужимать</SelectItem>
+                <SelectItem value="1">Чуть меньше размер</SelectItem>
+                <SelectItem value="2">Заметно меньше размер</SelectItem>
+                <SelectItem value="3">Как можно меньше размер (по умолчанию)</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">Меньше размер файла, текст не теряется.</p>
+            <p className="text-xs text-muted-foreground">Сильнее сжатие — меньше размер на диске, читаемость обычно не страдает.</p>
           </div>
         </div>
 
         <Separator />
 
         <div className="space-y-2">
-          <Label htmlFor="mode">Страницы: когда делать новый OCR</Label>
+          <Label htmlFor="mode">Какие страницы обрабатывать заново</Label>
           <Select
             value={value.mode}
             onValueChange={(v) => set("mode", v as OcrSettingsValue["mode"])}
@@ -88,24 +87,23 @@ export function OcrSettings({ value, onChange, disabled, className }: OcrSetting
               <SelectValue placeholder="Режим" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="force_ocr">Все страницы (лучше для сканов)</SelectItem>
-              <SelectItem value="redo_ocr">Только сомнительный / старый слой</SelectItem>
-              <SelectItem value="skip_text">Пропустить, если в PDF уже есть текст</SelectItem>
+              <SelectItem value="force_ocr">Все страницы — обычно так и нужно для сканов</SelectItem>
+              <SelectItem value="redo_ocr">Только там, где текст выглядит «битым»</SelectItem>
+              <SelectItem value="skip_text">Не трогать страницы, где текст уже распознан</SelectItem>
             </SelectContent>
           </Select>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            «Пропустить» оставляет страницы, где в PDF помечен текстовый слой — в «шумных» сканах
-            копирование иногда остаётся лишь с части страниц. Для длинных сканов без цифрового текста
-            выберите «Все страницы».
+            Обычный скан или фото документа — выбирайте первый пункт. Последний пункт подходит, если в файле уже
+            есть нормальный текст и не хочется обрабатывать всё заново.
           </p>
         </div>
 
         <div className="flex flex-col gap-3 rounded-lg border border-border/50 bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-0.5">
             <Label htmlFor="deskew" className="text-base">
-              Выровнять наклон (deskew)
+              Выровнять слегка перекошенные страницы
             </Label>
-            <p className="text-xs text-muted-foreground">Повернуть перекошенные страницы скана.</p>
+            <p className="text-xs text-muted-foreground">Полезно, если скан «уехал» на бок при подаче в сканер.</p>
           </div>
           <Switch
             id="deskew"

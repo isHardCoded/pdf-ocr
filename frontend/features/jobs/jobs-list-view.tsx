@@ -4,11 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Download, FileText, Loader2, Trash2 } from "lucide-react";
+import { Download, FileText, Trash2 } from "lucide-react";
 
 import { Pagination } from "@/components/pagination";
 import { PageContainer } from "@/components/layout";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { PageSpinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
@@ -45,7 +46,7 @@ export function JobsListView() {
     mutationFn: (id: number) => deleteJob(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["jobs"] });
-      toast.success("Удалено");
+      toast.success("Файл удалён");
     },
     onError: (e: { message?: string }) => toast.error(e?.message || "Не удалось удалить"),
   });
@@ -59,26 +60,23 @@ export function JobsListView() {
     <PageContainer>
       <div className="space-y-8">
         <header className="border-b border-border/50 pb-6">
-          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">История</h1>
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Мои файлы</h1>
           {data != null && (
             <p className="mt-1 text-sm text-muted-foreground">
-              {data.total} {pluralize(data.total, "задача", "задачи", "задач")}
+              {data.total} {pluralize(data.total, "файл", "файла", "файлов")}
             </p>
           )}
         </header>
 
         {isLoading ? (
-          <div className="flex min-h-48 items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Загрузка…
-          </div>
+          <PageSpinner minHeight="min-h-48" />
         ) : showEmpty ? (
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
               <FileText className="h-10 w-10 text-muted-foreground" aria-hidden />
-              <p className="text-sm text-muted-foreground">Пока нет задач</p>
+              <p className="text-sm text-muted-foreground">Здесь появятся файлы, которые вы распознаете</p>
               <Link href="/" className={cn(buttonVariants({ variant: "secondary" }), "text-sm")}>
-                Создать
+                Загрузить PDF
               </Link>
             </CardContent>
           </Card>
@@ -86,7 +84,7 @@ export function JobsListView() {
           <>
             <ul
               className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-              aria-label="Список задач"
+              aria-label="Список файлов"
             >
               {items.map((j) => (
                 <li key={j.id} className="flex min-h-[200px]">
