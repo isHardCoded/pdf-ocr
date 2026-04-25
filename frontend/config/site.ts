@@ -1,4 +1,3 @@
-/** Central place for app copy, nav, and metadata strings. */
 export const site = {
   name: "PDF OCR",
   tagline: "сканы → копируемый текст",

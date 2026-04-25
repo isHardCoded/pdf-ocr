@@ -1,17 +1,17 @@
 from sqlmodel import Session, SQLModel, create_engine
 
-from .config import DB_PATH
-
-DATABASE_URL = f"sqlite:///{DB_PATH}"
+from .config import DATABASE_URL
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False},
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=2,
 )
 
 
 def init_db() -> None:
-    from . import models  # noqa: F401 ensure tables are registered
+    from . import models  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
 

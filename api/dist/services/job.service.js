@@ -9,13 +9,12 @@ import { inputDir, outputDir } from "../config/env.js";
 function isFile(p) {
     return p.type === "file" && typeof p.toBuffer === "function";
 }
-function parseFormFields(file, otherParts) {
+function parsePdfJobFormFields(originalFilename, otherParts) {
     const body = {};
     for (const { fieldname, value } of otherParts) {
         if (fieldname)
             body[fieldname] = value;
     }
-    // Defaults when missing (multipart may omit)
     if (body.deskew === undefined)
         body.deskew = "true";
     if (body.optimize === undefined)
@@ -25,8 +24,7 @@ function parseFormFields(file, otherParts) {
     }
     if (body.mode === undefined)
         body.mode = "skip_text";
-    const name = file.filename;
-    if (!name || !name.toLowerCase().endsWith(".pdf")) {
+    if (!originalFilename || !originalFilename.toLowerCase().endsWith(".pdf")) {
         throw new AppError(400, "Only .pdf files are accepted", "invalid_file");
     }
     const safe = createJobFormSchema.safeParse({
@@ -39,7 +37,7 @@ function parseFormFields(file, otherParts) {
         const msg = safe.error.flatten();
         throw new AppError(400, `Invalid form: ${JSON.stringify(msg)}`, "invalid_form");
     }
-    return { file, fields: safe.data, filename: name };
+    return { fields: safe.data, filename: originalFilename };
 }
 export class JobService {
     repo;
@@ -47,12 +45,17 @@ export class JobService {
         this.repo = repo;
     }
     async createFromMultipart(getParts) {
-        let pdf;
+        let buffer = null;
+        let fileFieldName = "";
         const other = [];
         for await (const part of getParts()) {
             if (isFile(part)) {
                 if (part.fieldname === "file" && part.filename) {
-                    pdf = part;
+                    buffer = await part.toBuffer();
+                    fileFieldName = part.filename;
+                }
+                else {
+                    await part.toBuffer().catch(() => { });
                 }
                 continue;
             }
@@ -60,11 +63,10 @@ export class JobService {
                 other.push({ fieldname: part.fieldname, value: String(part.value ?? "") });
             }
         }
-        if (!pdf) {
+        if (!buffer || !fileFieldName) {
             throw new AppError(400, "Missing file field 'file'", "missing_file");
         }
-        const { file, fields, filename: originalName } = parseFormFields(pdf, other);
-        const buffer = await file.toBuffer();
+        const { fields, filename: originalName } = parsePdfJobFormFields(fileFieldName, other);
         const uid = randomUUID().replace(/-/g, "");
         const inName = `${uid}__${originalName}`;
         const inPath = join(inputDir(), inName);

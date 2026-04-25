@@ -128,7 +128,7 @@ export function JobsListView() {
                           {j.total_pages > 0 && ` · ${j.total_pages} стр.`}
                         </p>
                         <p className="mt-1 text-xs text-muted-foreground/80">
-                          {new Date(j.created_at + "Z").toLocaleString()}
+                          {j.created_at ? new Date(j.created_at).toLocaleString() : "—"}
                         </p>
                         {(j.status === "running" || j.status === "pending") && (
                           <div className="mt-3">

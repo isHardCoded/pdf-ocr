@@ -10,7 +10,11 @@ const resolvedData =
     ? path.resolve(process.env.DATA_DIR)
     : defaultDataDir();
 
-const dbUrl = process.env.DATABASE_URL?.trim() || `file:${path.join(resolvedData, "app.db")}`;
+/** Prisma/PostgreSQL, e.g. postgresql://user:pass@localhost:5432/db?schema=public */
+const defaultPg =
+  "postgresql://postgres:postgres@127.0.0.1:5432/pdf_ocr?schema=public";
+
+const dbUrl = (process.env.DATABASE_URL?.trim() || defaultPg).replace(/\r?\n/g, "");
 
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",

@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
     --background: 0 0% 99%;
     --foreground: 240 8% 8%;
     --card: 0 0% 100%;

@@ -1,4 +1,3 @@
-/** App shell width — header, main, footer share this. */
 export const APP_MAX_WIDTH_PX = 1220;
 
 export const appContainerClass =

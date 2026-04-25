@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "PDF OCR converter backend"
 requires-python = ">=3.11"
 dependencies = [
+    "python-dotenv>=1.0.0",
     "sqlmodel==0.0.22",
+    "psycopg2-binary>=2.9.9",
     "ocrmypdf>=16.0.0",
 ]

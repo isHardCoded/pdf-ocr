@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 interface Props {
   children: React.ReactNode;
   className?: string;
-  /** Внутри 1440px: узкая колонка для форм, иначе на всю ширину контейнера. */
   size?: "default" | "narrow";
 }
 

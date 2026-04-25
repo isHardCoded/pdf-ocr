@@ -3,26 +3,26 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Job {
-  id        Int     @id @default(autoincrement())
-  filename  String
-  status    String
-  progress  Float   @default(0)
+  id         Int     @id @default(autoincrement())
+  filename   String
+  status     String
+  progress   Float   @default(0)
   totalPages   Int  @map("total_pages")
   currentPage  Int  @map("current_page")
-  language  String  @default("rus")
-  optimize  Int     @default(3)
-  deskew    Boolean @default(true)
-  mode      String  @default("skip_text")
-  inputPath  String @map("input_path")
-  outputPath String @map("output_path")
+  language   String  @default("rus")
+  optimize   Int     @default(3)
+  deskew     Boolean @default(true)
+  mode       String  @default("skip_text")
+  inputPath  String  @map("input_path")
+  outputPath String  @map("output_path")
   inputSize  Int     @map("input_size")
   outputSize Int     @map("output_size")
-  error     String?
+  error      String?
   createdAt  DateTime @map("created_at")
   startedAt  DateTime? @map("started_at")
   completedAt DateTime? @map("completed_at")

@@ -29,7 +29,11 @@ export interface JobListResponse {
   total_pages: number;
 }
 
-const BASE = "/api";
+/** URL Fastify из браузера. Не `http://api:8000` (это имя хоста только внутри Docker), на хосте: `http://127.0.0.1:8000` */
+function apiBase(): string {
+  const raw = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/u, "")?.trim();
+  return raw && raw.length > 0 ? raw : "http://127.0.0.1:8000";
+}
 
 export async function createJob(file: File, opts: OcrSettingsValue): Promise<Job> {
   const fd = new FormData();
@@ -38,7 +42,7 @@ export async function createJob(file: File, opts: OcrSettingsValue): Promise<Job
   fd.append("optimize", String(opts.optimize));
   fd.append("deskew", String(opts.deskew));
   fd.append("mode", opts.mode);
-  const r = await fetch(`${BASE}/jobs`, { method: "POST", body: fd });
+  const r = await fetch(`${apiBase()}/jobs`, { method: "POST", body: fd });
   if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
@@ -48,26 +52,26 @@ export async function listJobs(params?: { page?: number; page_size?: number }): 
   if (params?.page != null) sp.set("page", String(params.page));
   if (params?.page_size != null) sp.set("page_size", String(params.page_size));
   const q = sp.toString();
-  const r = await fetch(`${BASE}/jobs${q ? `?${q}` : ""}`, { cache: "no-store" });
+  const r = await fetch(`${apiBase()}/jobs${q ? `?${q}` : ""}`, { cache: "no-store" });
   if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
 
 export async function getJob(id: number): Promise<Job> {
-  const r = await fetch(`${BASE}/jobs/${id}`, { cache: "no-store" });
+  const r = await fetch(`${apiBase()}/jobs/${id}`, { cache: "no-store" });
   if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
 
 export async function deleteJob(id: number): Promise<void> {
-  const r = await fetch(`${BASE}/jobs/${id}`, { method: "DELETE" });
+  const r = await fetch(`${apiBase()}/jobs/${id}`, { method: "DELETE" });
   if (!r.ok) throw new Error(await r.text());
 }
 
 export function downloadUrl(id: number): string {
-  return `${BASE}/jobs/${id}/download`;
+  return `${apiBase()}/jobs/${id}/download`;
 }
 
 export function streamUrl(id: number): string {
-  return `${BASE}/jobs/${id}/stream`;
+  return `${apiBase()}/jobs/${id}/stream`;
 }

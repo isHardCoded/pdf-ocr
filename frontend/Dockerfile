@@ -16,6 +16,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # Next does not require public/; without it, runner COPY --from=builder /app/public fails
 RUN mkdir -p public
+# Публичный URL API для клиентского `fetch` (тот хост, который открыт в браузере пользователя, не `http://api:8000`)
+ARG NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 

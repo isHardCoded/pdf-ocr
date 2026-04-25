@@ -18,7 +18,7 @@ RUN npm run build
 
 ENV NODE_ENV=production
 ENV DATA_DIR=/data
-ENV DATABASE_URL=file:/data/app.db
+ENV DATABASE_URL=postgresql://postgres:postgres@db:5432/pdf_ocr
 
 EXPOSE 8000
 

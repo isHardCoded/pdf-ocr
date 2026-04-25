@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-// API proxy: see app/api/[[...path]]/route.ts (uses BACKEND_URL or NEXT_PUBLIC_API_URL at runtime)
+// API: `NEXT_PUBLIC_API_URL` (браузер → Fastify напрямую; CORS в `api/src/app.ts`)
 const nextConfig = {
   reactStrictMode: true,
 };

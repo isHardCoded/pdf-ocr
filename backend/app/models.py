@@ -13,6 +13,8 @@ class JobStatus(str, Enum):
 
 
 class Job(SQLModel, table=True):
+    __tablename__ = "job"
+
     id: Optional[int] = Field(default=None, primary_key=True)
     filename: str
     status: JobStatus = Field(default=JobStatus.pending)

@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
 
@@ -31,27 +31,32 @@ function parseStep(raw: string | null): 1 | 2 | 3 {
 
 export function HomeWizard() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const step = useMemo(() => parseStep(searchParams.get("step")), [searchParams]);
+  // Не useSearchParams — в Next 15 App Router он часто «ломает» стрим RSC, страница с localhost:3000 «висит» в бесконечной загрузке
+  const [step, setStep] = useState<1 | 2 | 3>(1);
 
   const [file, setFile] = useState<File | null>(null);
   const [settings, setSettings] = useState<OcrSettingsValue>(defaultSettings);
   const [submitting, setSubmitting] = useState(false);
 
-  const setStep = useCallback(
+  useLayoutEffect(() => {
+    setStep(parseStep(new URLSearchParams(window.location.search).get("step")));
+  }, []);
+
+  const setStepWithUrl = useCallback(
     (s: 1 | 2 | 3) => {
-      const next = new URLSearchParams(searchParams.toString());
+      setStep(s);
+      const next = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
       if (s === 1) next.delete("step");
       else next.set("step", String(s));
       const q = next.toString();
       router.replace(q ? `/?${q}` : "/", { scroll: false });
     },
-    [router, searchParams]
+    [router]
   );
 
   useEffect(() => {
-    if ((step === 2 || step === 3) && !file) setStep(1);
-  }, [step, file, setStep]);
+    if ((step === 2 || step === 3) && !file) setStepWithUrl(1);
+  }, [step, file, setStepWithUrl]);
 
   async function onSubmit() {
     if (!file) return;
@@ -94,7 +99,7 @@ export function HomeWizard() {
               size="lg"
               className="min-w-40"
               disabled={!file || submitting}
-              onClick={() => setStep(2)}
+              onClick={() => setStepWithUrl(2)}
             >
               Далее
               <ArrowRight className="h-4 w-4" />
@@ -115,7 +120,7 @@ export function HomeWizard() {
               variant="ghost"
               className="sm:min-w-32"
               disabled={submitting}
-              onClick={() => setStep(1)}
+              onClick={() => setStepWithUrl(1)}
             >
               <ArrowLeft className="h-4 w-4" />
               Назад
@@ -125,7 +130,7 @@ export function HomeWizard() {
               size="lg"
               className="min-w-40"
               disabled={submitting}
-              onClick={() => setStep(3)}
+              onClick={() => setStepWithUrl(3)}
             >
               Далее
               <ArrowRight className="h-4 w-4" />
@@ -186,7 +191,7 @@ export function HomeWizard() {
               variant="ghost"
               className="sm:min-w-32"
               disabled={submitting}
-              onClick={() => setStep(2)}
+              onClick={() => setStepWithUrl(2)}
             >
               <ArrowLeft className="h-4 w-4" />
               Назад

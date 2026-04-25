@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 COPY pyproject.toml /app/
-RUN pip install --no-cache-dir "ocrmypdf>=16.0.0" "sqlmodel==0.0.22"
+RUN pip install --no-cache-dir "ocrmypdf>=16.0.0" "sqlmodel==0.0.22" "psycopg2-binary>=2.9.9" "python-dotenv>=1.0.0"
 
 COPY app /app/app
 
