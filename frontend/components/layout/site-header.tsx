@@ -1,27 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { FileText, History, Upload } from "lucide-react";
+import { FileText, User } from "lucide-react";
 
-import { mainNav, site } from "@/config/site";
+import { site } from "@/config/site";
 import { appContainerClass } from "@/config/layout";
+import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-const icons = {
-  "/": Upload,
-  "/jobs": History,
-} as const;
-
-function NavIcon({ href }: { href: "/" | "/jobs" }) {
-  const I = icons[href];
-  return <I className="h-4 w-4" aria-hidden />;
-}
-
 export function SiteHeader() {
-  const pathname = usePathname();
-
   return (
     <header className="sticky top-0 z-50 border-b border-border/40 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
       <div
@@ -43,29 +39,26 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <div className="flex items-center gap-1 sm:gap-2">
-          <nav className="flex items-center gap-0.5 sm:gap-1" aria-label="Основная навигация">
-            {mainNav.map((item) => {
-              const active =
-                pathname === item.href ||
-                (item.href !== "/" && pathname.startsWith(item.href));
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "inline-flex items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium transition-all duration-200 sm:px-3",
-                    active
-                      ? "bg-secondary text-foreground"
-                      : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
-                  )}
-                >
-                  <NavIcon href={item.href} />
-                  <span className="hidden sm:inline">{item.label}</span>
+        <div className="flex items-center gap-0.5 sm:gap-1.5">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-lg" aria-label="Профиль">
+                <User className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="font-normal">
+                <div className="text-sm">Профиль</div>
+                <p className="text-xs text-muted-foreground">Демо-кабинет, без реальной авторизации.</p>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/account" className="cursor-pointer">
+                  Личный кабинет
                 </Link>
-              );
-            })}
-          </nav>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <ThemeToggle />
         </div>
       </div>

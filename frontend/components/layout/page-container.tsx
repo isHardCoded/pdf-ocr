@@ -1,6 +1,5 @@
 import * as React from "react";
 
-import { appContainerClass } from "@/config/layout";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -9,9 +8,10 @@ interface Props {
   size?: "default" | "narrow";
 }
 
+/** Контейнер `max-w` в колонке контента; внешний `appContainer` задаёт `app/(app)/layout` вместе с сайдбаром */
 export function PageContainer({ children, className, size = "default" }: Props) {
   return (
-    <div className={cn(appContainerClass, className)}>
+    <div className={cn("w-full", className)}>
       {size === "narrow" ? (
         <div className="mx-auto w-full max-w-3xl">{children}</div>
       ) : (

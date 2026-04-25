@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Download, FileText, Loader2, Plus, Trash2 } from "lucide-react";
+import { Download, FileText, Loader2, Trash2 } from "lucide-react";
 
 import { Pagination } from "@/components/pagination";
 import { PageContainer } from "@/components/layout";
@@ -58,20 +58,14 @@ export function JobsListView() {
   return (
     <PageContainer>
       <div className="space-y-8">
-        <div className="flex flex-col gap-4 border-b border-border/50 pb-6 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">История</h1>
-            {data != null && (
-              <p className="mt-1 text-sm text-muted-foreground">
-                {data.total} {pluralize(data.total, "задача", "задачи", "задач")}
-              </p>
-            )}
-          </div>
-          <Link href="/" className={cn(buttonVariants(), "inline-flex w-full justify-center sm:w-auto")}>
-            <Plus className="h-4 w-4" />
-            Новая задача
-          </Link>
-        </div>
+        <header className="border-b border-border/50 pb-6">
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">История</h1>
+          {data != null && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {data.total} {pluralize(data.total, "задача", "задачи", "задач")}
+            </p>
+          )}
+        </header>
 
         {isLoading ? (
           <div className="flex min-h-48 items-center justify-center gap-2 text-sm text-muted-foreground">
