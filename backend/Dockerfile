@@ -27,5 +27,5 @@ COPY app /app/app
 ENV PYTHONUNBUFFERED=1
 ENV DATA_DIR=/data
 
-# Standalone worker (API is Node/Prisma; shared SQLite and files in DATA_DIR)
+# API — Node/Prisma; с воркером общий DATA_DIR и PostgreSQL
 CMD ["python", "-m", "app.worker"]

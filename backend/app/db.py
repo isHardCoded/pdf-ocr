@@ -1,4 +1,4 @@
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import SQLModel, create_engine
 
 from .config import DATABASE_URL
 
@@ -14,7 +14,3 @@ def init_db() -> None:
     from . import models  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
-
-
-def get_session() -> Session:
-    return Session(engine)

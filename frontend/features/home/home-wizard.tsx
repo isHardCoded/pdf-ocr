@@ -31,7 +31,7 @@ function parseStep(raw: string | null): 1 | 2 | 3 {
 
 export function HomeWizard() {
   const router = useRouter();
-  // Не useSearchParams — в Next 15 App Router он часто «ломает» стрим RSC, страница с localhost:3000 «висит» в бесконечной загрузке
+  // Шаг из URL — через window, без useSearchParams (RSC/Next 15)
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   const [file, setFile] = useState<File | null>(null);

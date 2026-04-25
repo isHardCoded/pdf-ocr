@@ -24,5 +24,3 @@ if (isMain) {
     process.exit(1);
   });
 }
-
-export { main };

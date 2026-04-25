@@ -1,4 +1,4 @@
-"""OCR engine: ocrmypdf; progress is written to SQLite and optional in-process SSE queue."""
+"""OCR engine: ocrmypdf; progress in PostgreSQL (optional in-process queue, unused by Node API)."""
 from __future__ import annotations
 
 import contextvars
@@ -27,7 +27,7 @@ class ProgressTracker:
     """Drop-in replacement for ocrmypdf's tqdm progress bar.
 
     ocrmypdf instantiates the class per-phase with total/desc/unit kwargs.
-    We forward page-level updates to the SSE queue and to SQLite.
+    We forward page-level updates to the queue and to the DB.
     """
 
     def __init__(self, *args, **kwargs):

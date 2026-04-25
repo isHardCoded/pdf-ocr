@@ -1,4 +1,4 @@
-"""OCR worker: processes pending jobs from the shared SQLite DB (API creates rows; ocrmypdf does the work)."""
+"""OCR worker: pending jobs from PostgreSQL (Prisma from API; ocrmypdf here)."""
 from __future__ import annotations
 
 import logging

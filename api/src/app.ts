@@ -25,8 +25,7 @@ export async function buildApp(): Promise<FastifyInstance> {
     if (anyErr?.statusCode === 400 && anyErr.message) {
       return reply.status(400).send({ error: anyErr.message, code: "bad_request" });
     }
-    void request.id;
-    app.log.error({ err, url: request.url, method: request.method });
+    app.log.error({ err, id: request.id, url: request.url, method: request.method });
     return reply.status(500).send({ error: "Internal error", code: "internal" });
   });
 

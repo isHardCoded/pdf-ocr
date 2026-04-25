@@ -1,9 +1,4 @@
-"""Per-job progress event broker.
-
-Each job has an asyncio Queue of events; SSE endpoint drains it.
-Because OCR runs in a worker thread, we use a thread-safe put that
-schedules into the asyncio loop.
-"""
+"""Очереди progress для in-process (SSE у клиента сидит в Node, не здесь)."""
 from __future__ import annotations
 
 import asyncio

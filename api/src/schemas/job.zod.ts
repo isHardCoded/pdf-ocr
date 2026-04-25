@@ -34,16 +34,6 @@ export const jobOutSchema = z.object({
 
 export type JobOut = z.infer<typeof jobOutSchema>;
 
-export const jobListOutSchema = z.object({
-  items: z.array(jobOutSchema),
-  total: z.number().int(),
-  page: z.number().int(),
-  page_size: z.number().int(),
-  total_pages: z.number().int(),
-});
-
-export type JobListOut = z.infer<typeof jobListOutSchema>;
-
 const formBool = z.preprocess(
   (v) => {
     if (v === undefined || v === null || v === "") return true;
