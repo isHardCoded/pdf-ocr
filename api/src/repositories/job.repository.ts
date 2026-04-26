@@ -6,16 +6,23 @@ export class JobRepository {
     return prisma.job.findUnique({ where: { id } });
   }
 
-  async list(params: { page: number; pageSize: number }): Promise<{ rows: Job[]; total: number }> {
-    const { page, pageSize } = params;
+  async list(params: {
+    page: number;
+    pageSize: number;
+    /** Задачи конкретного пользователя либо гостевые (userId = null) */
+    ownerUserId: number | null;
+  }): Promise<{ rows: Job[]; total: number }> {
+    const { page, pageSize, ownerUserId } = params;
     const skip = (page - 1) * pageSize;
+    const where = ownerUserId === null ? { userId: null } : { userId: ownerUserId };
     const [rows, total] = await Promise.all([
       prisma.job.findMany({
+        where,
         orderBy: { createdAt: "desc" },
         skip,
         take: pageSize,
       }),
-      prisma.job.count(),
+      prisma.job.count({ where }),
     ]);
     return { rows, total };
   }

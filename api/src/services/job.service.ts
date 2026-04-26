@@ -3,6 +3,7 @@ import { access, mkdir, unlink, writeFile } from "node:fs/promises";
 import { basename, extname, join, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import type { MultipartFile, MultipartValue } from "@fastify/multipart";
+import type { Prisma } from "@prisma/client";
 import { Job } from "@prisma/client";
 import { AppError } from "../lib/app-error.js";
 import { toJobOut } from "../mappers/job.mapper.js";
@@ -11,6 +12,9 @@ import { JobRepository } from "../repositories/job.repository.js";
 import { inputDir, outputDir } from "../config/env.js";
 
 type JobRow = Job;
+
+/** Владелец сессии или null — только гостевые задачи (userId IS NULL) */
+export type JobOwnerContext = { id: number } | null;
 
 type FormPart = MultipartFile | MultipartValue;
 
@@ -53,9 +57,15 @@ function parsePdfJobFormFields(
 export class JobService {
   constructor(private readonly repo: JobRepository) {}
 
-  async createFromMultipart(
-    getParts: () => AsyncIterable<FormPart>
-  ) {
+  assertJobAccess(row: JobRow, owner: JobOwnerContext): void {
+    if (row.userId != null) {
+      if (!owner || owner.id !== row.userId) {
+        throw new AppError(403, "Нет доступа к этой задаче", "forbidden");
+      }
+    }
+  }
+
+  async createFromMultipart(getParts: () => AsyncIterable<FormPart>, owner: JobOwnerContext) {
     let buffer: Buffer | null = null;
     let fileFieldName = "";
     const other: { fieldname: string; value: string }[] = [];
@@ -92,7 +102,7 @@ export class JobService {
     const inputSize = buffer.length;
 
     const now = new Date();
-    const row = await this.repo.create({
+    const base: Prisma.JobCreateInput = {
       filename: originalName,
       status: "pending",
       progress: 0,
@@ -107,20 +117,26 @@ export class JobService {
       inputSize,
       outputSize: 0,
       createdAt: now,
-    });
+    };
+    if (owner) {
+      base.user = { connect: { id: owner.id } };
+    }
+    const row = await this.repo.create(base);
 
     return toJobOut(row);
   }
 
-  list(query: unknown) {
+  list(query: unknown, owner: JobOwnerContext) {
     const p: ListJobsQuery = listJobsQuerySchema.parse(query);
-    return this.listPaged(p);
+    return this.listPaged(p, owner);
   }
 
-  async listPaged(p: { page: number; page_size: number }) {
+  async listPaged(p: { page: number; page_size: number }, owner: JobOwnerContext) {
+    const ownerUserId = owner ? owner.id : null;
     const { rows, total } = await this.repo.list({
       page: p.page,
       pageSize: p.page_size,
+      ownerUserId,
     });
     const totalPages = total ? Math.ceil(total / p.page_size) : 0;
     return {
@@ -132,19 +148,21 @@ export class JobService {
     };
   }
 
-  async getById(id: number) {
+  async getById(id: number, owner: JobOwnerContext) {
     const row = await this.repo.findById(id);
     if (!row) {
       throw new AppError(404, "Job not found", "not_found");
     }
+    this.assertJobAccess(row, owner);
     return toJobOut(row);
   }
 
-  async deleteJob(id: number) {
+  async deleteJob(id: number, owner: JobOwnerContext) {
     const row = await this.repo.findById(id);
     if (!row) {
       throw new AppError(404, "Job not found", "not_found");
     }
+    this.assertJobAccess(row, owner);
     for (const p of [row.inputPath, row.outputPath]) {
       if (!p) continue;
       try {
@@ -156,11 +174,12 @@ export class JobService {
     await this.repo.remove(id);
   }
 
-  async getRowOrThrow(id: number): Promise<JobRow> {
+  async getRowOrThrow(id: number, owner: JobOwnerContext): Promise<JobRow> {
     const row = await this.repo.findById(id);
     if (!row) {
       throw new AppError(404, "Job not found", "not_found");
     }
+    this.assertJobAccess(row, owner);
     return row;
   }
 

@@ -5,7 +5,7 @@ import { site } from "@/config/site";
 
 export const metadata: Metadata = {
   title: `Личный кабинет — ${site.name}`,
-  description: "Профиль и демо-статистика (mock).",
+  description: "Профиль, статистика по задачам OCR и журнал активности.",
 };
 
 export default function AccountPage() {

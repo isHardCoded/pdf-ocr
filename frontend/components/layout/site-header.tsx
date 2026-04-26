@@ -1,15 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { FileText, User } from "lucide-react";
+import { FileText, LogIn, LogOut, User } from "lucide-react";
 
 import { site } from "@/config/site";
 import { appContainerClass } from "@/config/layout";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useAuth } from "@/components/providers/auth-provider";
 import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
+  const { status, user, logout } = useAuth();
+
   return (
     <header className="sticky top-0 z-50 border-b border-border/40 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
       <div
@@ -32,11 +35,46 @@ export function SiteHeader() {
         </Link>
 
         <div className="flex items-center gap-0.5 sm:gap-1.5">
-          <Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-lg p-0" asChild>
-            <Link href="/account" aria-label="Личный кабинет">
-              <User className="h-4 w-4" />
-            </Link>
-          </Button>
+          {status === "loading" ? (
+            <span className="h-9 w-9 rounded-lg bg-muted/50" aria-hidden />
+          ) : status === "guest" ? (
+            <>
+              <Button type="button" variant="ghost" size="sm" className="hidden h-9 rounded-lg px-2 sm:inline-flex" asChild>
+                <Link href="/login">Войти</Link>
+              </Button>
+              <Button type="button" variant="secondary" size="sm" className="h-9 rounded-lg px-2 text-xs sm:text-sm" asChild>
+                <Link href="/register">Регистрация</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <span className="hidden max-w-[10rem] truncate text-xs text-muted-foreground sm:inline" title={user.email}>
+                {user.fullName}
+              </span>
+              <Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-lg p-0" asChild>
+                <Link href="/account" aria-label="Личный кабинет">
+                  <User className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-lg p-0"
+                aria-label="Выйти"
+                onClick={() => void logout()}
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+          {status === "guest" ? (
+            <Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-lg p-0 sm:hidden" asChild>
+              <Link href="/login" aria-label="Войти">
+                <LogIn className="h-4 w-4" />
+              </Link>
+            </Button>
+          ) : null}
           <ThemeToggle />
         </div>
       </div>

@@ -26,6 +26,7 @@ services:
     environment:
       DATA_DIR: /data
       DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/pdf_ocr}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
     volumes:
       - ./data:/data
     ports:

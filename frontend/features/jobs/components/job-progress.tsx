@@ -43,7 +43,7 @@ export function JobProgress({
 
   useEffect(() => {
     if (initialStatus === "completed" || initialStatus === "failed") return;
-    const es = new EventSource(streamUrl(jobId));
+    const es = new EventSource(streamUrl(jobId), { withCredentials: true });
     es.addEventListener("progress", (e: MessageEvent) => {
       try {
         const data = JSON.parse(e.data) as ProgressEvent;

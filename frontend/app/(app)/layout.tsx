@@ -1,17 +1,20 @@
 import type { ReactNode } from "react";
 
 import { AppSidebar } from "@/components/layout/app-sidebar";
+import { SiteHeader } from "@/components/layout/site-header";
 import { appContainerClass } from "@/config/layout";
 import { cn } from "@/lib/utils";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <div
-      className={cn(
-        appContainerClass,
-        "flex flex-1 flex-col items-stretch gap-6 md:flex-row md:items-start md:gap-8 lg:gap-10"
-      )}
-    >
+    <>
+      <SiteHeader />
+      <div
+        className={cn(
+          appContainerClass,
+          "flex flex-1 flex-col items-stretch gap-6 py-6 md:flex-row md:items-start md:gap-8 md:py-10 lg:gap-10 lg:py-12"
+        )}
+      >
       <AppSidebar />
       <div
         className={cn(
@@ -25,5 +28,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {children}
       </div>
     </div>
+    </>
   );
 }

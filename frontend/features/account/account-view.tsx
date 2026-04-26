@@ -1,9 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, Calendar, HardDrive, Layers, ListChecks, Mail, Search } from "lucide-react";
 
 import { PageContainer } from "@/components/layout";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -13,8 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import { useAuth } from "@/components/providers/auth-provider";
+import { fetchAccountSummary, type AccountActivityKind, type AccountSummary } from "@/lib/auth-api";
 import { cn, formatBytes } from "@/lib/utils";
-import { mockActivity, mockStats, mockUser, type MockActivityKind } from "@/lib/mock-account";
 
 function initials(name: string) {
   const p = name.trim().split(/\s+/u);
@@ -50,14 +54,13 @@ function formatRuDateLong(iso: string) {
 }
 
 const KIND_FILTER_ALL = "all" as const;
-type ActivityFilter = typeof KIND_FILTER_ALL | MockActivityKind;
+type ActivityFilter = typeof KIND_FILTER_ALL | AccountActivityKind;
 
 const KIND_FILTER_LABELS: Record<ActivityFilter, string> = {
   all: "Все типы",
   complete: "Завершение",
   create: "Создание",
-  download: "Скачивание",
-  delete: "Удаление",
+  failed: "Ошибки",
 };
 
 type SortColumn = "at" | "action" | "detail";
@@ -107,6 +110,29 @@ function SortHeader({
 }
 
 export function AccountView() {
+  const { status } = useAuth();
+  const [summary, setSummary] = useState<AccountSummary | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(async () => {
+    if (status !== "authed") return;
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const s = await fetchAccountSummary();
+      setSummary(s);
+    } catch (e: unknown) {
+      setLoadError(e instanceof Error ? e.message : "Не удалось загрузить данные");
+    } finally {
+      setLoading(false);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
   const [search, setSearch] = useState("");
   const [kindFilter, setKindFilter] = useState<ActivityFilter>(KIND_FILTER_ALL);
   const [sortColumn, setSortColumn] = useState<SortColumn>("at");
@@ -122,8 +148,9 @@ export function AccountView() {
   };
 
   const filteredRows = useMemo(() => {
+    if (!summary) return [];
     const q = search.trim().toLowerCase();
-    let rows = [...mockActivity];
+    let rows = [...summary.activity];
     if (kindFilter !== KIND_FILTER_ALL) {
       rows = rows.filter((r) => r.kind === kindFilter);
     }
@@ -143,7 +170,66 @@ export function AccountView() {
       return sortDirection === "asc" ? cmp : -cmp;
     });
     return rows;
-  }, [search, kindFilter, sortColumn, sortDirection]);
+  }, [summary, search, kindFilter, sortColumn, sortDirection]);
+
+  if (status === "loading") {
+    return (
+      <PageContainer>
+        <div className="flex min-h-[40vh] items-center justify-center gap-2 text-muted-foreground">
+          <Spinner className="h-5 w-5" />
+          <span className="text-sm">Загрузка…</span>
+        </div>
+      </PageContainer>
+    );
+  }
+
+  if (status === "guest") {
+    return (
+      <PageContainer>
+        <div className="mx-auto max-w-lg space-y-6 py-8 text-center">
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Личный кабинет</h1>
+          <p className="text-sm text-muted-foreground">
+            Войдите или зарегистрируйтесь, чтобы видеть свои задачи OCR, статистику и историю.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Button asChild>
+              <Link href="/login">Войти</Link>
+            </Button>
+            <Button variant="secondary" asChild>
+              <Link href="/register">Регистрация</Link>
+            </Button>
+          </div>
+        </div>
+      </PageContainer>
+    );
+  }
+
+  if (loading && !summary) {
+    return (
+      <PageContainer>
+        <div className="flex min-h-[40vh] items-center justify-center gap-2 text-muted-foreground">
+          <Spinner className="h-5 w-5" />
+          <span className="text-sm">Загружаем профиль…</span>
+        </div>
+      </PageContainer>
+    );
+  }
+
+  if (loadError || !summary) {
+    return (
+      <PageContainer>
+        <div className="mx-auto max-w-lg space-y-4 py-8 text-center">
+          <p className="text-sm text-destructive">{loadError ?? "Нет данных"}</p>
+          <Button type="button" variant="outline" onClick={() => void load()}>
+            Повторить
+          </Button>
+        </div>
+      </PageContainer>
+    );
+  }
+
+  const u = summary.user;
+  const st = summary.stats;
 
   return (
     <PageContainer>
@@ -151,7 +237,7 @@ export function AccountView() {
         <header className="border-b border-border/50 pb-6">
           <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Личный кабинет</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Здесь показан пример того, как может выглядеть профиль. Вход по паролю пока не подключён.
+            Данные из вашего аккаунта: профиль, статистика по задачам и журнал событий.
           </p>
         </header>
 
@@ -162,13 +248,13 @@ export function AccountView() {
                 className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary/12 text-xl font-semibold text-primary"
                 aria-hidden
               >
-                {initials(mockUser.displayName)}
+                {initials(u.fullName)}
               </div>
               <div className="min-w-0 flex-1 space-y-4">
                 <div>
-                  <CardTitle className="text-lg sm:text-xl">{mockUser.displayName}</CardTitle>
+                  <CardTitle className="text-lg sm:text-xl">{u.fullName}</CardTitle>
                   <CardDescription className="mt-1.5 text-sm">
-                    Имя и почта ниже — только для примера в интерфейсе.
+                    {u.emailVerified ? "Почта подтверждена." : "Подтвердите почту, если ещё не сделали это после регистрации."}
                   </CardDescription>
                 </div>
                 <Separator />
@@ -177,14 +263,14 @@ export function AccountView() {
                     <Mail className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                     <div className="min-w-0">
                       <dt className="text-xs text-muted-foreground">Электронная почта</dt>
-                      <dd className="mt-0.5 break-all text-sm font-medium">{mockUser.email}</dd>
+                      <dd className="mt-0.5 break-all text-sm font-medium">{u.email}</dd>
                     </div>
                   </div>
                   <div className="flex gap-2.5">
                     <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                     <div>
                       <dt className="text-xs text-muted-foreground">С нами с</dt>
-                      <dd className="mt-0.5 text-sm font-medium">{formatRuDateLong(mockUser.memberSince)}</dd>
+                      <dd className="mt-0.5 text-sm font-medium">{formatRuDateLong(u.memberSince)}</dd>
                     </div>
                   </div>
                 </dl>
@@ -195,7 +281,7 @@ export function AccountView() {
 
         <section aria-labelledby="stats-heading">
           <h2 id="stats-heading" className="text-sm font-medium text-muted-foreground">
-            Статистика
+            Статистика по вашим задачам
           </h2>
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Card className="border-border/70">
@@ -204,8 +290,8 @@ export function AccountView() {
                   <p className="text-xs text-muted-foreground">Задачи</p>
                   <ListChecks className="h-4 w-4 text-primary/80" aria-hidden />
                 </div>
-                <p className="mt-1 text-2xl font-semibold tabular-nums">{mockStats.tasksTotal}</p>
-                <p className="mt-1 text-[11px] text-muted-foreground">всего обработано (пример)</p>
+                <p className="mt-1 text-2xl font-semibold tabular-nums">{st.tasksTotal}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">всего в аккаунте</p>
               </CardContent>
             </Card>
             <Card className="border-border/70">
@@ -215,21 +301,19 @@ export function AccountView() {
                   <Layers className="h-4 w-4 text-primary/80" aria-hidden />
                 </div>
                 <p className="mt-1 text-2xl font-semibold tabular-nums">
-                  {mockStats.pagesProcessed.toLocaleString("ru-RU")}
+                  {st.pagesProcessed.toLocaleString("ru-RU")}
                 </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">страниц с текстом (пример)</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">страниц в завершённых задачах</p>
               </CardContent>
             </Card>
             <Card className="border-border/70">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs text-muted-foreground">Хранилище</p>
+                  <p className="text-xs text-muted-foreground">Объём файлов</p>
                   <HardDrive className="h-4 w-4 text-primary/80" aria-hidden />
                 </div>
-                <p className="mt-1 text-2xl font-semibold tabular-nums">
-                  {formatBytes(mockStats.storageBytes)}
-                </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">занято под файлы (пример)</p>
+                <p className="mt-1 text-2xl font-semibold tabular-nums">{formatBytes(st.storageBytes)}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">вход + результат на диске</p>
               </CardContent>
             </Card>
           </div>
@@ -239,7 +323,7 @@ export function AccountView() {
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-base sm:text-lg">Активность</CardTitle>
             <CardDescription>
-              Пример журнала: можно искать по словам, отфильтровать по типу действия и отсортировать столбцы.
+              События по вашим задачам: создание, завершение и ошибки. Можно искать, фильтровать и сортировать.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -330,7 +414,8 @@ export function AccountView() {
               </table>
             </div>
             <p className="text-center text-xs text-muted-foreground">
-              Последняя обработка (пример): {formatRuDateTime(mockStats.lastJobAt)}
+              Последняя задача:{" "}
+              {st.lastJobAt ? formatRuDateTime(st.lastJobAt) : "—"}
             </p>
           </CardContent>
         </Card>

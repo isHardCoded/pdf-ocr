@@ -1,11 +1,18 @@
 import "./config/bootstrap.js";
+import "./types/fastify-augment.js";
 import { ZodError } from "zod";
 import fastify, { type FastifyInstance, type FastifyError } from "fastify";
 import cors from "@fastify/cors";
+import cookie from "@fastify/cookie";
 import multipart from "@fastify/multipart";
 import { env } from "./config/env.js";
 import { isAppError } from "./lib/app-error.js";
+import { AuthService } from "./services/auth.service.js";
+import { UserRepository } from "./repositories/user.repository.js";
+import { RefreshSessionRepository } from "./repositories/refresh-session.repository.js";
 import jobPlugin from "./routes/jobs.plugin.js";
+import authPlugin from "./routes/auth.plugin.js";
+import accountPlugin from "./routes/account.plugin.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = fastify({
@@ -31,9 +38,21 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await app.register(cors, {
     origin: true,
+    credentials: true,
     methods: ["GET", "POST", "DELETE", "HEAD", "OPTIONS", "PUT", "PATCH"],
   });
+  await app.register(cookie);
   await app.register(multipart, { limits: { fileSize: 2 * 1024 * 1024 * 1024 } });
+
+  const authService = new AuthService(new UserRepository(), new RefreshSessionRepository());
+  app.decorate("authService", authService);
+
+  app.addHook("onRequest", async (request, reply) => {
+    await app.authService.attachUserToRequest(request, reply);
+  });
+
+  await app.register(authPlugin);
+  await app.register(accountPlugin);
   await app.register(jobPlugin);
 
   app.get("/health", () => ({ status: "ok" } as const));
